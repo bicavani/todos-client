@@ -1,0 +1,43 @@
+import React from 'react'
+import { Box, Typography, withStyles } from '@material-ui/core';
+import FlareIcon from '@material-ui/icons/Flare';
+
+
+const styles = theme => ({
+  myDay: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    opacity: 0.8,
+  },
+  icon: {
+    fontSize: '0.8rem',
+    marginRight: theme.spacing(1),
+    [theme.breakpoints.up('sm')]: {
+      fontSize: '1rem'
+    }
+  },
+  text: {
+    fontSize: '0.6rem',
+    [theme.breakpoints.up('sm')]: {
+      fontSize: '0.7rem'
+    }
+  }
+})
+
+const MyDayInfo = ({classes, myDay}) => {
+  if (myDay) {
+
+    return (
+      <Box className={classes.myDay} ml={{sm: 1}}>
+        <FlareIcon className={classes.icon} />
+        <Typography className={classes.text} variant="caption" >
+          Ngày của tôi
+        </Typography>
+      </Box>
+    )
+  } else {
+    return null
+  }
+}
+
+export default withStyles(styles)(MyDayInfo)

@@ -2,51 +2,38 @@ import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import TodoExcerpt from './TodoExcerpt'
-import TodoUpdate from './TodoUpdate';
-
+import {useSelector} from 'react-redux'
 
 const styles = theme => ({
   root: {
     width: '100%',
+    marginTop: theme.spacing(3),
   },
 });
 
-const TodoList = (props) => {
-  const {classes, 
-      isTodoUpdateOpen, 
-      handleTodoUpdateOpen,
-      handleTodoUpdateClose} = props;
+const TodoList = props => { 
+  const {classes, todosIds} = props
+  const todosStatus = useSelector(state => state.todos.status)
+  const error = useSelector(state => state.todos.error)
 
-  const todos = [
-    {
-      id: 1,
-      title: 'code todo app',
-      content: 'code full client and server',
-      isComplete: false
-    },
-  ]
+  let content
 
-  const listTodo = todos.map(todo => {
-    return (
-      <div>
+  if(todosStatus === 'loading') {
+    content = <div className='loader'>Loading....</div>
+  } else if(todosStatus === 'succeeded') {
+    content = todosIds.map(todoId => 
         <TodoExcerpt 
-          key={todo.id} 
-          todo={todo} 
-          handleTodoUpdateOpen={handleTodoUpdateOpen}  
+          key={todoId} 
+          todoId={todoId}        
         />
-        <TodoUpdate 
-          key={todo.id} 
-          todo={todo} 
-          isOpen={isTodoUpdateOpen}
-          handleClose={handleTodoUpdateClose}
-        />
-      </div>
     )
-  })
+  } else if (todosStatus === 'failed') {
+    content = <div>{error}</div>
+  }
 
   return (
     <List className={classes.root}>
-        {listTodo}
+      {content}
     </List>
   );
 }

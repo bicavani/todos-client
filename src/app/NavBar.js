@@ -5,15 +5,16 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import InputBase from '@material-ui/core/InputBase';
-import Badge from '@material-ui/core/Badge';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
-import MailIcon from '@material-ui/icons/Mail';
-import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
 import FormatListNumberedRtlIcon from '@material-ui/icons/FormatListNumberedRtl';
+import Switch from '@material-ui/core/Switch'
+import Tooltip from '@material-ui/core/Tooltip'
+import { Redirect, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const styles = theme => ({
   root: {
@@ -78,23 +79,35 @@ const styles = theme => ({
   },
   sectionDesktop: {
     display: 'none',
-    [theme.breakpoints.up('md')]: {
-      display: 'flex',  
+    [theme.breakpoints.up('sm')]: {
+      display: 'flex',
+      alignItems: 'center',  
+      justifyContent: 'space-evenly'
     },
   },
   sectionMobile: {
     display: 'flex',
-    [theme.breakpoints.up('md')]: {
+    justifyContent: 'center',
+    [theme.breakpoints.up('sm')]: {
       display: 'none',
     },   
   },
 });
 
 const NavBar = (props) => {
-  const {classes} = props;
+  const {classes, darkMode, switchDarkMode, link,
+         searchTerm, changeSearchTerm, changeLink} = props
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
-  
+
+  const todosStatus = useSelector(state => state.todos.status)
+  const {pathname} = useLocation()
+  const isReloadSearchPage = /search\/\w+$/.test(pathname)
+
+  if (isReloadSearchPage && todosStatus === 'idle') {
+    const arr = pathname.split('/')
+    changeSearchTerm(arr[arr.length - 1])
+  }
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
@@ -115,6 +128,15 @@ const NavBar = (props) => {
   const handleMobileMenuOpen = (event) => {
     setMobileMoreAnchorEl(event.currentTarget);
   };
+
+  const handleSearchInputChange = event => {
+    changeSearchTerm(event.target.value)
+  }
+
+  if(searchTerm) changeLink('search')
+  else {
+    if(link === 'search') changeLink('tasks')
+  }
 
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
@@ -143,21 +165,14 @@ const NavBar = (props) => {
       open={isMobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
-      <MenuItem>
-        <IconButton aria-label="show 4 new mails" color="inherit">
-          <Badge badgeContent={4} color="secondary">
-            <MailIcon />
-          </Badge>
-        </IconButton>
-        <p>Messages</p>
-      </MenuItem>
-      <MenuItem>
-        <IconButton aria-label="show 11 new notifications" color="inherit">
-          <Badge badgeContent={11} color="secondary">
-            <NotificationsIcon />
-          </Badge>
-        </IconButton>
-        <p>Notifications</p>
+      <MenuItem style={{paddingLeft: 0}}>
+          <IconButton aria-label="switch darkmode" color="inherit">
+            <Switch 
+              checked={darkMode}
+              onChange={switchDarkMode}
+            />
+          </IconButton>
+          <p>Change DarkMode</p>
       </MenuItem>
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton
@@ -176,7 +191,7 @@ const NavBar = (props) => {
   return (
     <div className={classes.root}>
       <AppBar className={classes.appBar} position="fixed">
-        <Toolbar className={classes.toolbar}>         
+        <Toolbar className={classes.toolbar}> 
           <IconButton
             edge="start"
             color="inherit"
@@ -195,6 +210,8 @@ const NavBar = (props) => {
             </div>
             <InputBase
               placeholder="Search…"
+              value={searchTerm}
+              onChange={handleSearchInputChange}
               classes={{
                 root: classes.inputRoot,
                 input: classes.inputInput,
@@ -204,16 +221,12 @@ const NavBar = (props) => {
           </div>
           <div className={classes.grow} />
           <div className={classes.sectionDesktop}>
-            <IconButton aria-label="show 4 new mails" color="inherit">
-              <Badge badgeContent={4} color="secondary">
-                <MailIcon />
-              </Badge>
-            </IconButton>
-            <IconButton aria-label="show 17 new notifications" color="inherit">
-              <Badge badgeContent={17} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
+            <Tooltip title="Change DarkMode">
+              <Switch 
+                checked={darkMode}
+                onChange={switchDarkMode}
+              />
+            </Tooltip>  
             <IconButton
               edge="end"
               aria-label="account of current user"
@@ -240,6 +253,8 @@ const NavBar = (props) => {
       </AppBar>
       {renderMobileMenu}
       {renderMenu}
+      {searchTerm && <Redirect to={`/tasks/search/${searchTerm}`} />}
+      {(!searchTerm && link === 'search') && <Redirect to='/tasks' />}
     </div>
   );
 }

@@ -13,10 +13,10 @@ import EventNoteIcon from '@material-ui/icons/EventNote';
 import PersonOutlineIcon from '@material-ui/icons/PersonOutline';
 import HomeIcon from '@material-ui/icons/Home';
 import MenuIcon from '@material-ui/icons/Menu';
-
+import { Link, useLocation } from 'react-router-dom'
+import { TasksPageContext } from '../pages/TasksPage';
 
 export const drawerWidth = 240;
-const menuIcons = [<FlareIcon />, <StarBorderIcon />, <EventNoteIcon />, <PersonOutlineIcon />, <HomeIcon />]
 
 const styles = (theme) => ({
   hide: {
@@ -28,11 +28,10 @@ const styles = (theme) => ({
   },
   paper: {
     position: 'fixed',
-    paddingTop: theme.spacing(7),
+    paddingTop: theme.spacing(7.5),
     zIndex: 60,
-    backgroundColor: theme.palette.grey[100],
-    [theme.breakpoints.up('md')]: {
-      paddingTop: theme.spacing(8),
+    [theme.breakpoints.up('sm')]: {
+      paddingTop: theme.spacing(9),
       height: '100vh'
     }
   },
@@ -71,7 +70,7 @@ const styles = (theme) => ({
     top: 0,
     left: 0,
     right: 0,
-    bottom:0,
+    bottom: 0,
     backgroundColor: 'black',
     opacity: 0.1,
   },
@@ -80,22 +79,43 @@ const styles = (theme) => ({
     [theme.breakpoints.up('md')]: {
       display: 'none',
     }
+  },
+  btnActive: {
+    backgroundColor: theme.palette.background.grey
+  },
+  link: {
+    textDecoration: 'none',
+    color: theme.palette.text.primary,
+
   }
 });
 
 const MenuLeft = (props) => {
-  const {classes, isOpen, handleToggle} = props
+  const { classes, changeSearchTerm, changeLink } = props
+  const [isOpen, setIsOpen] = React.useState(false)
 
-  const handleBtnMenuClick = () => handleToggle()
-  
-  const handleOverlayClick = () => handleToggle()
+  const location = useLocation()
+
+  const handleBtnMenuClick = () => setIsOpen(!isOpen)
+
+  const handleOverlayClick = () => setIsOpen(!isOpen)
+
+  const handleIconClick = () => {
+    changeSearchTerm('')
+  }
+
+  const isBtnActive = btnName => {
+    const { pathname } = location
+    const reg = new RegExp(`${btnName}$`, 'g')
+    return reg.test(pathname)
+  }
 
   return (
     <div>
       <div className={clsx(classes.overlay,
-        {[classes.hide]: !isOpen},
-        {[classes.show]: isOpen}
-        )}
+        { [classes.hide]: !isOpen },
+        { [classes.show]: isOpen }
+      )}
         onClick={handleOverlayClick}
       >
 
@@ -125,16 +145,45 @@ const MenuLeft = (props) => {
           </IconButton>
         </div>
         <List>
-          {['Ngày của Tôi', 'Quan trọng', 'Đã lập kế hoạch', 'Đã giao cho bạn', 'Tác vụ']
-            .map((text, index) => (
-              <ListItem button key={text}>
-                <ListItemIcon>{menuIcons[index]}</ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItem>
-          ))}
+          <Link to="/tasks/myday" className={classes.link} onClick={() => changeLink('myday')}>
+            <ListItem
+              onClick={handleIconClick}
+              button
+              className={clsx({ [classes.btnActive]: isBtnActive('myday') })}
+            >
+              <ListItemIcon><FlareIcon /></ListItemIcon>
+              <ListItemText primary="Ngày của tôi" />
+            </ListItem>
+          </Link>
+          <Link to="/tasks/important" className={classes.link} onClick={() => changeLink('important')}>
+            <ListItem button
+              onClick={handleIconClick}
+              className={clsx({ [classes.btnActive]: isBtnActive('important') })}
+            >
+              <ListItemIcon><StarBorderIcon /></ListItemIcon>
+              <ListItemText primary="Quan trọng" />
+            </ListItem>
+          </Link>
+          <Link to="/tasks/planned" className={classes.link} onClick={() => changeLink('planned')}>
+            <ListItem button
+              onClick={handleIconClick}
+              className={clsx({ [classes.btnActive]: isBtnActive('planned') })}
+            >
+              <ListItemIcon><EventNoteIcon /></ListItemIcon>
+              <ListItemText primary="Đã lập kế hoạch" />
+            </ListItem>
+          </Link>
+          <Link to="/tasks" className={classes.link} onClick={() => changeLink('tasks')}>
+            <ListItem button
+              onClick={handleIconClick}
+              className={clsx({ [classes.btnActive]: isBtnActive('tasks') })}>
+              <ListItemIcon><HomeIcon /></ListItemIcon>
+              <ListItemText primary="Tác vụ" />
+            </ListItem>
+          </Link>
         </List>
       </Drawer>
-    </div>  
+    </div>
   )
 }
 
