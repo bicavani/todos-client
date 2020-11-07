@@ -10,11 +10,10 @@ import ListItemText from '@material-ui/core/ListItemText';
 import FlareIcon from '@material-ui/icons/Flare';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
 import EventNoteIcon from '@material-ui/icons/EventNote';
-import PersonOutlineIcon from '@material-ui/icons/PersonOutline';
 import HomeIcon from '@material-ui/icons/Home';
 import MenuIcon from '@material-ui/icons/Menu';
 import { Link, useLocation } from 'react-router-dom'
-import { TasksPageContext } from '../pages/TasksPage';
+import PropTypes from 'prop-types'
 
 export const drawerWidth = 240;
 
@@ -188,3 +187,9 @@ const MenuLeft = (props) => {
 }
 
 export default withStyles(styles)(MenuLeft)
+
+MenuLeft.propTypes = {
+  classes: PropTypes.object,
+  changeSearchTerm: PropTypes.func,
+  changeLink: PropTypes.func
+}

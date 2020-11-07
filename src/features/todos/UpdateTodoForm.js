@@ -12,19 +12,19 @@ import TextField from '@material-ui/core/TextField';
 import clsx from 'clsx'
 import { List, Box } from '@material-ui/core';
 import FlareIcon from '@material-ui/icons/Flare';
-import NotificationsActiveIcon from '@material-ui/icons/NotificationsActive';
 import Button from '@material-ui/core/Button';
 import SaveIcon from '@material-ui/icons/Save';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import { useSelector, useDispatch } from 'react-redux';
 import { deleteTodo, selectTodoById, updateTodo } from './todosSlice';
-import { TasksPageContext } from '../../pages/TasksPage';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { useHistory } from 'react-router-dom';
 import TimeInfo from './TimeInfo'
 import DatePicker from './DatePicker'
 import BtnDeleteTodo from './BtnDeleteTodo';
 import Remind from './Remind';
+import { OpenUpdateTodoContext } from '../../pages/DashBoard';
+import PropTypes from 'prop-types';
 
 const styles = theme => ({
   container: {
@@ -84,12 +84,12 @@ const UpdateTodoForm = (props) => {
   const [updateRequestStatus, setUpdateRequestStatus] = useState('idle')
 
   const todo = useSelector(state => selectTodoById(state, todoId))
-  const { isUpdateTodoFormOpen, closeUpdateTodoForm } = useContext(TasksPageContext)
+  const { isUpdateTodoFormOpen, closeUpdateTodoForm } = useContext(OpenUpdateTodoContext)
   const dispatch = useDispatch()
   const history = useHistory()
 
   const [title, setTitle] = useState(todo.title)
-  const [description, setDescription] = useState(todo.description || '')
+  const [description, setDescription] = useState(todo.description)
   const [isMyDate, setIsMyDate] = useState(todo.isMyDate)
   const [expDate, setExpDate] = useState(todo.expDate)
   const [remindTime, setRemindTime] = useState(todo.remindTime)
@@ -102,7 +102,19 @@ const UpdateTodoForm = (props) => {
   const handleChangeRemind = date => setRemindTime(date)
 
 
-  const canSave = Boolean(title) && updateRequestStatus === 'idle'
+  const canSave = (
+    Boolean(title) &&
+    updateRequestStatus === 'idle' &&
+    (
+      title.trim() !== todo.title.trim() ||
+      description.trim() !== todo.description.trim() ||
+      isMyDate !== todo.isMyDate ||
+      Boolean(expDate) ||
+      Boolean(remindTime)
+    )
+  )
+
+
   const handleSaveClick = async () => {
     if (canSave) {
       try {
@@ -169,6 +181,8 @@ const UpdateTodoForm = (props) => {
               fullWidth
               onChange={handleTitleClick}
               value={title}
+              error={!Boolean(title)}
+              helperText={!Boolean(title) && 'invalid title'}
             />
             <ListItemSecondaryAction>
               <StarBorderIcon color={todo.isImportant ? 'primary' : 'disabled'} />
@@ -221,6 +235,7 @@ const UpdateTodoForm = (props) => {
                 className={classes.button}
                 startIcon={<SaveIcon />}
                 onClick={handleSaveClick}
+                disabled={!canSave}
               >
                 Save
               </Button>
@@ -241,3 +256,8 @@ const UpdateTodoForm = (props) => {
 }
 
 export default withStyles(styles)(UpdateTodoForm)
+
+UpdateTodoForm.propTypes = {
+  classes: PropTypes.object,
+  todoId: PropTypes.string
+}

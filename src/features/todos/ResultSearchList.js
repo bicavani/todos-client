@@ -2,32 +2,33 @@ import { Box, Typography, withStyles } from '@material-ui/core'
 import React from 'react'
 import TodosList from './TodosList'
 import { selectAllTodos } from './todosSlice'
-import {useSelector} from 'react-redux'
+import { useSelector } from 'react-redux'
 import SentimentVeryDissatisfiedIcon from '@material-ui/icons/SentimentVeryDissatisfied';
+import PropTypes from 'prop-types'
 
 const styles = theme => ({
 
 })
 
 const ResultSearchList = props => {
-  const {searchTerm, classes} = props
+  const { searchTerm } = props
   const todos = useSelector(selectAllTodos)
 
   const todosMatchSearchTerm = todos.filter(todo =>
-      todo.title.indexOf(searchTerm) !== -1
-    )
+    todo.title.indexOf(searchTerm) !== -1
+  )
 
-  const todosIds = todosMatchSearchTerm.map(todo => todo._id)  
+  const todosIds = todosMatchSearchTerm.map(todo => todo._id)
 
   return (
     <Box>
-      <Typography variant="h6" color="primary" style={{marginBottom: 16}} >
+      <Typography variant="h6" color="primary" style={{ marginBottom: 16 }} >
         {`Đang tìm kiếm "${searchTerm}"`}
       </Typography>
       <Typography variant="body1">
         <b>Tác vụ</b>
       </Typography>
-      <TodosList 
+      <TodosList
         todosIds={todosIds}
       />
       {todosIds.length === 0 && (
@@ -44,3 +45,7 @@ const ResultSearchList = props => {
 }
 
 export default withStyles(styles)(ResultSearchList)
+
+ResultSearchList.propTypes = {
+  searchTerm: PropTypes.string
+}

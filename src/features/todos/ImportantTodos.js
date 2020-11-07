@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import AddTodoForm from './AddTodoForm'
 import { selectAllTodos } from './todosSlice'
 import TodosList from './TodosList'
+import PropTypes from 'prop-types'
 
 const styles = theme => ({
   mb: {
@@ -12,17 +13,17 @@ const styles = theme => ({
 })
 
 const ImportantTodos = props => {
-  const {classes} = props
+  const { classes } = props
   const todos = useSelector(selectAllTodos)
 
   const todosImportant = todos.filter(todo => todo.isImportant)
-  const todosIds = todosImportant.map(todo => todo._id) 
+  const todosIds = todosImportant.map(todo => todo._id)
   return (
     <Box>
       <Typography className={classes.mb} variant="h6" color="primary" >Quan trọng</Typography>
-      <AddTodoForm 
-        placeholderInput="Thêm tác vụ Quan trọng" 
-        option={{isImportant: true}}
+      <AddTodoForm
+        placeholderInput="Thêm tác vụ Quan trọng"
+        option={{ isImportant: true }}
       />
       <TodosList todosIds={todosIds} />
     </Box>
@@ -30,3 +31,7 @@ const ImportantTodos = props => {
 }
 
 export default withStyles(styles)(ImportantTodos)
+
+ImportantTodos.propTypes = {
+  classes: PropTypes.object
+}

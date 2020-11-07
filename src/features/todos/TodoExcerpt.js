@@ -14,11 +14,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectTodoById, updateTodo } from './todosSlice';
 import { unwrapResult } from '@reduxjs/toolkit';
 import { Link, useLocation } from 'react-router-dom';
-import { TasksPageContext } from '../../pages/TasksPage'
-import ExpDate from './ExpDate';
+import ExpDate from './ExpDateInfo';
 import { Box, Tooltip } from '@material-ui/core';
 import MyDayInfo from './MyDayInfo';
-
+import NotificationsActiveIcon from '@material-ui/icons/NotificationsActive';
+import { OpenUpdateTodoContext } from '../../pages/DashBoard';
+import PropTypes from 'prop-types'
 
 const styles = theme => ({
   borderBottom: {
@@ -50,6 +51,14 @@ const styles = theme => ({
   cursor: {
     cursor: 'pointer'
   },
+  notiIcon: {
+    fontSize: '0.8rem',
+    marginRight: theme.spacing(1),
+    opacity: 0.6,
+    [theme.breakpoints.up('sm')]: {
+      fontSize: '1rem'
+    }
+  },
 })
 
 let TodoExcerpt = (props) => {
@@ -57,7 +66,7 @@ let TodoExcerpt = (props) => {
 
   const [updateRequestStatus, setUpdateRequestStatus] = useState('idle')
 
-  const { openUpdateTodoForm } = useContext(TasksPageContext)
+  const { openUpdateTodoForm } = useContext(OpenUpdateTodoContext)
 
   const location = useLocation()
   const dispatch = useDispatch()
@@ -70,19 +79,21 @@ let TodoExcerpt = (props) => {
     return pathname.indexOf(todoId) !== -1
   }
   const handleTodoUpdate = async (todoUpdate) => {
-    try {
-      setUpdateRequestStatus('pending')
-      const resultAction = await dispatch(
-        updateTodo({
-          todoId,
-          todoUpdate
-        })
-      )
-      unwrapResult(resultAction)
-    } catch (error) {
-      console.log('Failed to update the todo: ', error)
-    } finally {
-      setUpdateRequestStatus('idle')
+    if (updateRequestStatus === 'idle') {
+      try {
+        setUpdateRequestStatus('pending')
+        const resultAction = await dispatch(
+          updateTodo({
+            todoId,
+            todoUpdate: { ...todo, ...todoUpdate }
+          })
+        )
+        unwrapResult(resultAction)
+      } catch (error) {
+        console.log('Failed to update the todo: ', error)
+      } finally {
+        setUpdateRequestStatus('idle')
+      }
     }
   }
   const handleIconCheckClick = () => {
@@ -118,6 +129,7 @@ let TodoExcerpt = (props) => {
       <ListItemIcon onClick={handleIconCheckClick}>
         {renderIcon()}
       </ListItemIcon>
+
       <Link
         to={{
           pathname: `/tasks/id/${todoId}`,
@@ -133,8 +145,8 @@ let TodoExcerpt = (props) => {
               [classes.textLineThrough]: todo.isComplete
             })}
           />
-          <Box display="flex" flexDirection={{xs: 'column', sm: 'row'}} flexWrap={{sm: 'wrap'}} >
-            
+          <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} flexWrap={{ sm: 'wrap' }} >
+            {todo.remindTime && <NotificationsActiveIcon className={classes.notiIcon} />}
             <ExpDate expDate={todo.expDate} />
             <MyDayInfo myDay={todo.isMyDate} />
           </Box>
@@ -167,3 +179,8 @@ let TodoExcerpt = (props) => {
 TodoExcerpt = React.memo(TodoExcerpt)
 
 export default withStyles(styles)(TodoExcerpt)
+
+TodoExcerpt.propTypes = {
+  todoId: PropTypes.string,
+  classes: PropTypes.object
+}

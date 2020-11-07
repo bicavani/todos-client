@@ -13,8 +13,11 @@ import MoreIcon from '@material-ui/icons/MoreVert';
 import FormatListNumberedRtlIcon from '@material-ui/icons/FormatListNumberedRtl';
 import Switch from '@material-ui/core/Switch'
 import Tooltip from '@material-ui/core/Tooltip'
-import { Redirect, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { Redirect, useHistory, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import PropTypes from 'prop-types'
+import { logoutUser } from '../features/auth/logoutUser';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 
 const styles = theme => ({
   root: {
@@ -81,7 +84,7 @@ const styles = theme => ({
     display: 'none',
     [theme.breakpoints.up('sm')]: {
       display: 'flex',
-      alignItems: 'center',  
+      alignItems: 'center',
       justifyContent: 'space-evenly'
     },
   },
@@ -90,18 +93,24 @@ const styles = theme => ({
     justifyContent: 'center',
     [theme.breakpoints.up('sm')]: {
       display: 'none',
-    },   
+    },
   },
 });
 
 const NavBar = (props) => {
-  const {classes, darkMode, switchDarkMode, link,
-         searchTerm, changeSearchTerm, changeLink} = props
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
+  const {
+    classes, darkMode, switchDarkMode, link,
+    searchTerm, changeSearchTerm, changeLink } = props
 
+  const [anchorEl, setAnchorEl] = React.useState(null)
+  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null)
+
+  const dispatch = useDispatch()
+  const history = useHistory()
+
+  const { username } = useSelector(state => state.auth.user)
   const todosStatus = useSelector(state => state.todos.status)
-  const {pathname} = useLocation()
+  const { pathname } = useLocation()
   const isReloadSearchPage = /search\/\w+$/.test(pathname)
 
   if (isReloadSearchPage && todosStatus === 'idle') {
@@ -111,6 +120,8 @@ const NavBar = (props) => {
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+
+  const handleClickSignout = () => logoutUser(dispatch, history)
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -133,9 +144,9 @@ const NavBar = (props) => {
     changeSearchTerm(event.target.value)
   }
 
-  if(searchTerm) changeLink('search')
+  if (searchTerm) changeLink('search')
   else {
-    if(link === 'search') changeLink('tasks')
+    if (link === 'search') changeLink('tasks')
   }
 
   const menuId = 'primary-search-account-menu';
@@ -149,8 +160,28 @@ const NavBar = (props) => {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+      <MenuItem onClick={handleMenuClose} style={{ paddingLeft: 0 }}>
+        <IconButton
+          aria-label="account of current user"
+          aria-controls="primary-search-account-menu"
+          aria-haspopup="true"
+          color="inherit"
+        >
+          <AccountCircle />
+        </IconButton>
+        <p>{username}</p>
+      </MenuItem>
+      <MenuItem onClick={handleClickSignout} style={{ paddingLeft: 0 }}>
+        <IconButton
+          aria-label="account of current user"
+          aria-controls="primary-search-account-menu"
+          aria-haspopup="true"
+          color="inherit"
+        >
+          <ExitToAppIcon />
+        </IconButton>
+        <p>Sign out</p>
+      </MenuItem>
     </Menu>
   );
 
@@ -165,16 +196,16 @@ const NavBar = (props) => {
       open={isMobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
-      <MenuItem style={{paddingLeft: 0}}>
-          <IconButton aria-label="switch darkmode" color="inherit">
-            <Switch 
-              checked={darkMode}
-              onChange={switchDarkMode}
-            />
-          </IconButton>
-          <p>Change DarkMode</p>
+      <MenuItem style={{ paddingLeft: 0 }}>
+        <IconButton aria-label="switch darkmode" color="inherit">
+          <Switch
+            checked={darkMode}
+            onChange={switchDarkMode}
+          />
+        </IconButton>
+        <p>Change DarkMode</p>
       </MenuItem>
-      <MenuItem onClick={handleProfileMenuOpen}>
+      <MenuItem>
         <IconButton
           aria-label="account of current user"
           aria-controls="primary-search-account-menu"
@@ -183,7 +214,18 @@ const NavBar = (props) => {
         >
           <AccountCircle />
         </IconButton>
-        <p>Profile</p>
+        <p>{username}</p>
+      </MenuItem>
+      <MenuItem onClick={handleClickSignout}>
+        <IconButton
+          aria-label="account of current user"
+          aria-controls="primary-search-account-menu"
+          aria-haspopup="true"
+          color="inherit"
+        >
+          <ExitToAppIcon />
+        </IconButton>
+        <p>Sign out</p>
       </MenuItem>
     </Menu>
   );
@@ -191,7 +233,7 @@ const NavBar = (props) => {
   return (
     <div className={classes.root}>
       <AppBar className={classes.appBar} position="fixed">
-        <Toolbar className={classes.toolbar}> 
+        <Toolbar className={classes.toolbar}>
           <IconButton
             edge="start"
             color="inherit"
@@ -222,11 +264,11 @@ const NavBar = (props) => {
           <div className={classes.grow} />
           <div className={classes.sectionDesktop}>
             <Tooltip title="Change DarkMode">
-              <Switch 
+              <Switch
                 checked={darkMode}
                 onChange={switchDarkMode}
               />
-            </Tooltip>  
+            </Tooltip>
             <IconButton
               edge="end"
               aria-label="account of current user"
@@ -260,3 +302,13 @@ const NavBar = (props) => {
 }
 
 export default withStyles(styles)(NavBar)
+
+NavBar.propTypes = {
+  classes: PropTypes.object,
+  darkMode: PropTypes.bool,
+  switchDarkMode: PropTypes.func,
+  link: PropTypes.string,
+  searchTerm: PropTypes.string,
+  changeSearchTerm: PropTypes.func,
+  changeLink: PropTypes.func
+}

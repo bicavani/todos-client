@@ -1,6 +1,7 @@
 import React from 'react'
 import { Box, Typography, withStyles } from '@material-ui/core';
 import FlareIcon from '@material-ui/icons/Flare';
+import PropTypes from 'prop-types'
 
 
 const styles = theme => ({
@@ -41,3 +42,8 @@ const MyDayInfo = ({classes, myDay}) => {
 }
 
 export default withStyles(styles)(MyDayInfo)
+
+MyDayInfo.propTypes = {
+  classes: PropTypes.object, 
+  myDay: PropTypes.bool
+}

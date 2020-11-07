@@ -5,6 +5,8 @@ import AddTodoForm from './AddTodoForm'
 import { selectAllTodos } from './todosSlice'
 import TodosList from './TodosList'
 import { format } from 'date-fns'
+import PropTypes from 'prop-types'
+
 
 const styles = theme => ({
   caption: {
@@ -22,7 +24,7 @@ const MyDayTodos = props => {
   const todosIds = todosCreatedToday.map(todo => todo._id)
   return (
     <Box>
-      <Box mb={3}> 
+      <Box mb={3}>
         <Typography variant="h6" color="primary" >Ngày của tôi</Typography>
         <Typography className={classes.caption} variant="caption" >{today}</Typography>
       </Box>
@@ -35,3 +37,7 @@ const MyDayTodos = props => {
 }
 
 export default withStyles(styles)(MyDayTodos)
+
+MyDayTodos.propTypes = {
+  classes: PropTypes.object
+}

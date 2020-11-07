@@ -1,7 +1,7 @@
 import { createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit'
 import axios from 'axios'
 
-const URL = 'https://todos197.herokuapp.com'
+const URL = 'http://localhost:4000/todos'
 
 const todosAdapter = createEntityAdapter({
   selectId: (todo) => todo._id,  //_id: id by mongodb create auto
@@ -16,7 +16,15 @@ const initialState = todosAdapter.getInitialState({
 export const fetchTodos = createAsyncThunk(
   'todos/fetchTodos',
   async () => {
-    const res = await axios.get(`${URL}/todos`)
+    const res = await axios.get(URL)
+    return res.data.todos
+  }
+)
+
+export const deleteAllTodos = createAsyncThunk(
+  'todos/deleteAllTodos',
+  async () => {
+    const res = await axios.delete(`${URL}/delete-allTodos`)
     return res.data.todos
   }
 )
@@ -31,7 +39,7 @@ export const addNewTodo = createAsyncThunk(
 
 export const updateTodo = createAsyncThunk(
   'todo/updateTodo',
-  async ({todoId, todoUpdate}) => {
+  async ({ todoId, todoUpdate }) => {
     const res = await axios.put(`${URL}/edit-todo/${todoId}`, todoUpdate)
     return res.data.todos
   }
@@ -64,6 +72,7 @@ export const todosSlice = createSlice({
     [addNewTodo.fulfilled]: todosAdapter.addOne,
     [updateTodo.fulfilled]: todosAdapter.setAll,
     [deleteTodo.fulfilled]: todosAdapter.setAll,
+    [deleteAllTodos.fulfilled]: todosAdapter.setAll,
   }
 })
 

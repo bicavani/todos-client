@@ -1,9 +1,10 @@
 import React from 'react'
 import ScheduleIcon from '@material-ui/icons/Schedule';
 import { Box, Typography, withStyles } from '@material-ui/core';
-import {checkDate} from './DatePicker'
+import { checkDate } from './DatePicker'
 import { format } from 'date-fns';
-import { parseISO} from 'date-fns'
+import { parseISO } from 'date-fns'
+import PropTypes from 'prop-types'
 
 const styles = theme => ({
   expDate: {
@@ -35,7 +36,7 @@ export const isDueDate = date => {
   )
 }
 
-const ExpDate = ({classes, expDate}) => {
+const ExpDate = ({ classes, expDate }) => {
   if (expDate) {
     const expDateParsed = parseISO(expDate)
     let result = checkDate(expDateParsed)
@@ -46,20 +47,20 @@ const ExpDate = ({classes, expDate}) => {
     const expDateFormated = format(expDateParsed, 'dd/MM/yyyy')
 
     switch (result) {
-      case 0: 
+      case 0:
         content.text = `Đến hạn Hôm nay`
         content.color = 'primary'
         break
-      case -1: 
+      case -1:
         content.text = `Đến hạn ${expDateFormated}`
         content.color = ''
-        break  
-      case 1: 
+        break
+      case 1:
         content.text = `Quá hạn ${expDateFormated}`
         content.color = 'secondary'
         break
-      default: 
-        break  
+      default:
+        break
     }
     return (
       <Box className={classes.expDate}>
@@ -75,3 +76,7 @@ const ExpDate = ({classes, expDate}) => {
 }
 
 export default withStyles(styles)(ExpDate)
+
+ExpDate.propTypes = {
+  date: PropTypes.string
+}

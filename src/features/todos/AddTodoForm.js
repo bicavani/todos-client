@@ -8,7 +8,8 @@ import AddIcon from '@material-ui/icons/Add';
 import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked';
 import { addNewTodo } from './todosSlice';
 import { unwrapResult } from '@reduxjs/toolkit';
-import {useDispatch} from 'react-redux'
+import { useDispatch } from 'react-redux'
+import PropTypes from 'prop-types'
 
 const styles = theme => ({
   formControl: {
@@ -27,25 +28,25 @@ const AddTodoForm = (props) => {
   const [addRequestStatus, setAddRequestStatus] = useState('idle')
   const [isFocusForm, setIsFocusForm] = useState(false)
 
-  const {classes, placeholderInput, option} = props
+  const { classes, placeholderInput, option } = props
 
   const dispatch = useDispatch()
 
   useEffect(
     () => {
       const handleWindowClick = (e) => {
-        if(e.target.id != 'addTodo' &&
-           e.target.tagName != 'path' &&
-           e.target.id != 'addTodo-Label' &&
-           e.target.id != 'addTodo-Input' &&
-           e.target.id != 'addIcon') {
-           setIsFocusForm(false) 
-           }
+        if (e.target.id !== 'addTodo' &&
+          e.target.tagName !== 'path' &&
+          e.target.id !== 'addTodo-Label' &&
+          e.target.id !== 'addTodo-Input' &&
+          e.target.id !== 'addIcon') {
+          setIsFocusForm(false)
+        }
       }
 
       if (isFocusForm) {
         window.addEventListener('click', handleWindowClick)
-      } 
+      }
       return () => window.removeEventListener('click', handleWindowClick)
     },
     [isFocusForm, setIsFocusForm]
@@ -66,7 +67,7 @@ const AddTodoForm = (props) => {
             title: title.trim(),
             isComplete: false,
             ...option
-          })          
+          })
         )
         unwrapResult(resultAction)
         setTitle('')
@@ -92,9 +93,9 @@ const AddTodoForm = (props) => {
   }
 
   return (
-    <FormControl 
-      id="addTodo" 
-      className={classes.formControl} 
+    <FormControl
+      id="addTodo"
+      className={classes.formControl}
       onClick={handleFormClick}>
       <InputLabel id="addTodo-Label" htmlFor="addTodo">{placeholderInput}</InputLabel>
       <Input
@@ -110,8 +111,13 @@ const AddTodoForm = (props) => {
       />
     </FormControl>
   )
-  
+
 }
 
 export default withStyles(styles)(AddTodoForm)
 
+AddTodoForm.propTypes = {
+  classes: PropTypes.object,
+  placeholderInput: PropTypes.string,
+  option: PropTypes.object
+}

@@ -6,11 +6,11 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import DateRangeIcon from '@material-ui/icons/DateRange';
-import { Box, ListItemSecondaryAction, Paper, withStyles } from '@material-ui/core';
+import { Box, Button, ListItemSecondaryAction, Paper, withStyles } from '@material-ui/core';
 import clsx from 'clsx';
 import { add, compareAsc, format, parseISO } from 'date-fns'
 import CloseIcon from '@material-ui/icons/Close';
-import BtnSaveDate from './BtnSaveDate'
+import PropTypes from 'prop-types'
 
 const styles = theme => ({
   datePicker: {
@@ -46,10 +46,14 @@ const DatePicker = (props) => {
   let expDateParsed = null
 
   if (expDate) expDateParsed = format(parseISO(expDate), 'dd/MM/yyyy')
+  const initialText = () => {
+    if (expDateParsed) return `Đến hạn ${expDateParsed}`
+    else return 'Thêm ngày đến hạn'
+  }
 
   const [selectedDate, setSelectedDate] = React.useState(new Date());
   const [openDateInput, setOpenDateInput] = React.useState(false)
-  const [text, setText] = React.useState(expDateParsed || "Thêm ngày đến hạn")
+  const [text, setText] = React.useState(initialText())
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -57,15 +61,24 @@ const DatePicker = (props) => {
   const handleopenDateInput = () => setOpenDateInput(!openDateInput)
 
   //Add minutes and hours to selectedDate => format selectedDate(mm/dd/yy 23:59:ss)
-  const selectedDateAdded = add(selectedDate, {
-    hours: 23 - selectedDate.getHours(),
-    minutes: 59 - selectedDate.getMinutes(),
-  })
-  const isCheckDate = checkDate(selectedDateAdded) !== 1
+  let selectedDateAdded
+  let date
+  let canSaveDate
+  if (selectedDate) {
+    selectedDateAdded = add(selectedDate, {
+      hours: 23 - selectedDate.getHours(),
+      minutes: 59 - selectedDate.getMinutes(),
+    })
+
+    date = format(selectedDateAdded, 'dd/MM/yyyy')
+
+    canSaveDate =
+      checkDate(selectedDateAdded) !== 1 &&
+      date !== expDateParsed
+  } else canSaveDate = false
 
   const handleSaveDate = (e) => {
-    const date = format(selectedDateAdded, 'dd/MM/yyyy')
-    setText(`Đến hạn vào ${date}`)
+    setText(`Đến hạn ${date}`)
     setOpenDateInput(false)
     handleExpDateChange(selectedDateAdded)
   }
@@ -84,13 +97,13 @@ const DatePicker = (props) => {
         onClick={handleopenDateInput}
       >
         <ListItemIcon>
-          <DateRangeIcon color={expDate ? 'primary' : 'disabled'} />
+          <DateRangeIcon color={text !== 'Thêm ngày đến hạn' ? 'primary' : 'disabled'} />
         </ListItemIcon>
         <ListItemText
           primary={text}
         />
         <ListItemSecondaryAction style={{ cursor: 'pointer' }}>
-          {expDate && <CloseIcon fontSize="small" onClick={handleIconCloseClick} />}
+          {(expDate || text !== 'Thêm ngày đến hạn') && <CloseIcon fontSize="small" onClick={handleIconCloseClick} />}
         </ListItemSecondaryAction>
       </ListItem>
       <Paper elevation={2}
@@ -114,13 +127,23 @@ const DatePicker = (props) => {
             }}
           />
         </MuiPickersUtilsProvider>
-        <BtnSaveDate
-          isCheckDate={isCheckDate}
-          handleSaveDate={handleSaveDate}
-        />
+        <Button
+          disabled={!canSaveDate}
+          variant="contained"
+          color="primary"
+          onClick={handleSaveDate}
+        >
+          Save
+      </Button>
       </Paper>
     </Box>
   )
 }
 
 export default withStyles(styles)(DatePicker)
+
+DatePicker.propTypes = {
+  classes: PropTypes.object,
+  handleExpDateChange: PropTypes.func,
+  expDate: PropTypes.string
+}

@@ -1,32 +1,29 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { ThemeProvider, createMuiTheme, responsiveFontSizes } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import NavBar from './app/NavBar';
 import {
   BrowserRouter as Router,
   Switch,
   Route,
   Redirect,
 } from 'react-router-dom'
-import TasksPage from './pages/TasksPage';
+
+import Signin from './pages/Signin';
+import Signup from './pages/Signup';
+import DashBoard from './pages/DashBoard';
+import { setAuthToken } from './features/auth/setAuthToken';
+import jwt_decode from 'jwt-decode'
+import { useDispatch } from 'react-redux';
+import { signinUser } from './features/auth/authSlice';
+import { logoutUser } from './features/auth/logoutUser';
+import PrivateRoute from './app/PrivateRoute'
+
 
 function App() {
   const [prefersDarkMode, setPrefersDarkMode] = useState(false)
-  const [searchTerm, setSearchTerm] = useState(null)
-  
-  const {pathname} = window.location
-  const initialLink = () => {
-    const match = pathname.match(/tasks\/\w+/g)
-    if(match === null) return 'tasks'
-    else if(match[0] === 'tasks/planned') return 'planned'
-    else if(match[0] === 'tasks/important') return 'important'
-    else if(match[0] === 'tasks/myday') return 'myday'
-    else return 'tasks'
-  }
-  const [link, setLink] = useState(initialLink())
 
   let theme = React.useMemo(
-    () => 
+    () =>
       createMuiTheme({
         palette: {
           type: prefersDarkMode ? 'dark' : 'light',
@@ -37,39 +34,48 @@ function App() {
       }),
     [prefersDarkMode]
   );
+  const switchDarkMode = () => setPrefersDarkMode(!prefersDarkMode)
+
   theme = responsiveFontSizes(theme)
 
-  const switchDarkMode = () => setPrefersDarkMode(!prefersDarkMode)
-  const changeSearchTerm= (text) =>setSearchTerm(text)
-  const changeLink = link => setLink(link)
+  const dispatch = useDispatch()
+
+  if (localStorage.jwtToken) {
+    const token = localStorage.jwtToken
+    setAuthToken(token)
+
+    const decoded = jwt_decode(token)
+    dispatch(signinUser(decoded))
+
+    const currentTime = Date.now() / 1000
+    if (decoded.exp < currentTime) {
+      logoutUser(dispatch)
+
+      window.location.href = "/signin"
+    }
+  }
 
   return (
     <Router>
       <ThemeProvider theme={theme}>
         <CssBaseline>
-          <NavBar
-            darkMode={prefersDarkMode}
-            switchDarkMode={switchDarkMode} 
-            changeSearchTerm={changeSearchTerm}
-            searchTerm={searchTerm}
-            changeLink={changeLink}
-            link={link}
-          />
           <div className="App">
+            <Route exact path="/" component={Signin} />
+            <Route exact path="/signin" component={Signin} />
+            <Route exact path="/signup" component={Signup} />
             <Switch>
-              <Route path="/tasks">
-                <TasksPage 
-                  link={link}
-                  changeLink={changeLink}
-                  searchTerm={searchTerm} 
-                  changeSearchTerm={changeSearchTerm}/>
-              </Route>
-              <Redirect to="/tasks" />
-            </Switch>  
+              <PrivateRoute path='/tasks'>
+                <DashBoard
+                  prefersDarkMode={prefersDarkMode}
+                  switchDarkMode={switchDarkMode}
+                />
+              </PrivateRoute>
+              <Redirect to="/" />
+            </Switch>
           </div>
         </CssBaseline>
       </ThemeProvider>
-    </Router>  
+    </Router>
   );
 }
 

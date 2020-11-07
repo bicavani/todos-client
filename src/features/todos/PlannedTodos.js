@@ -4,6 +4,8 @@ import { useSelector } from 'react-redux'
 import AddTodoForm from './AddTodoForm'
 import { selectAllTodos } from './todosSlice'
 import TodosList from './TodosList'
+import PropTypes from 'prop-types'
+
 
 const styles = theme => ({
   mb: {
@@ -12,17 +14,17 @@ const styles = theme => ({
 })
 
 const TodosPlanned = props => {
-  const {classes} = props
+  const { classes } = props
   const todos = useSelector(selectAllTodos)
 
   const todosHasExpDate = todos.filter(todo => todo.expDate)
-  const todosIds = todosHasExpDate.map(todo => todo._id) 
+  const todosIds = todosHasExpDate.map(todo => todo._id)
   return (
     <Box>
       <Typography className={classes.mb} variant="h6" color="primary" >Đã lập kế hoạch</Typography>
-      <AddTodoForm 
-        placeholderInput="Thêm tác vụ hết hạn vào hôm nay" 
-        option={{expDate: new Date()}}
+      <AddTodoForm
+        placeholderInput="Thêm tác vụ hết hạn vào hôm nay"
+        option={{ expDate: new Date() }}
       />
       <TodosList todosIds={todosIds} />
     </Box>
@@ -30,3 +32,7 @@ const TodosPlanned = props => {
 }
 
 export default withStyles(styles)(TodosPlanned)
+
+TodosPlanned.propTypes = {
+  classes: PropTypes.object
+}

@@ -1,8 +1,9 @@
 import React from 'react'
-import {parseISO, formatDistanceToNow} from 'date-fns'
+import { parseISO, formatDistanceToNow } from 'date-fns'
 import { selectTodoById } from './todosSlice'
-import {useSelector} from 'react-redux'
+import { useSelector } from 'react-redux'
 import { Box, Typography, withStyles } from '@material-ui/core'
+import PropTypes from 'prop-types'
 
 const styles = theme => ({
   timeInfo: {
@@ -18,7 +19,7 @@ const styles = theme => ({
   }
 })
 
-const TimeInfo = ({classes,todoId}) => {
+const TimeInfo = ({ classes, todoId }) => {
   const todo = useSelector(state => selectTodoById(state, todoId))
   const timeCreate = todo.createdAt
   const timeUpdate = todo.updatedAt
@@ -39,9 +40,14 @@ const TimeInfo = ({classes,todoId}) => {
       <Typography variant="caption">
         Last updated: <i>{updateAgo}</i>
       </Typography>
-    </Box>  
+    </Box>
   )
 
 }
 
 export default withStyles(styles)(TimeInfo)
+
+TimeInfo.propTypes = {
+  classes: PropTypes.object,
+  todoId: PropTypes.string
+}

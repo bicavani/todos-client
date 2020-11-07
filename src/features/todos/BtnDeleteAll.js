@@ -7,15 +7,33 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { Box, withStyles } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
-import PropTypes from 'prop-types'
+import { useDispatch, useSelector } from 'react-redux';
+import { deleteAllTodos, selectTodoIds } from './todosSlice';
+import { unwrapResult } from '@reduxjs/toolkit';
 
 const styles = theme => {
 
 }
 
-const BtnDeleteTodo = props => {
-  const { todoTitle, handleClickAgree } = props
+const BtnDeleteAll = props => {
   const [open, setOpen] = React.useState(false);
+
+  const dispatch = useDispatch()
+  const todoIds = useSelector(selectTodoIds)
+
+  const handleClickAgree = async () => {
+    if (todoIds.length > 0) {
+      try {
+        const resultAction = await dispatch(
+          deleteAllTodos()
+        )
+        unwrapResult(resultAction)
+        handleClose()
+      } catch (error) {
+        console.log(error)
+      }
+    }
+  }
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -33,8 +51,9 @@ const BtnDeleteTodo = props => {
         size="small"
         startIcon={<DeleteIcon />}
         onClick={handleClickOpen}
+        disabled={Boolean(todoIds.length === 0)}
       >
-        Delete
+        Delete All
       </Button>
       <Dialog
         open={open}
@@ -43,7 +62,7 @@ const BtnDeleteTodo = props => {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {`"${todoTitle}" sẽ bị xóa vĩnh viễn.`}
+          Tất cả dữ liệu sẽ bị xóa vĩnh viễn.
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
@@ -55,7 +74,7 @@ const BtnDeleteTodo = props => {
             Hủy bỏ
           </Button>
           <Button onClick={handleClickAgree} variant="contained" color="secondary" size="small" autoFocus>
-            Xóa tác vụ
+            Đồng ý
           </Button>
         </DialogActions>
       </Dialog>
@@ -63,9 +82,4 @@ const BtnDeleteTodo = props => {
   );
 }
 
-export default withStyles(styles)(BtnDeleteTodo)
-
-BtnDeleteTodo.propTypes = {
-  todoTitle: PropTypes.string,
-  handleClickAgree: PropTypes.func
-}
+export default withStyles(styles)(BtnDeleteAll)

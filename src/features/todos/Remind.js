@@ -3,14 +3,15 @@ import 'date-fns';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { Box, ListItemSecondaryAction, Paper, withStyles } from '@material-ui/core';
+import { Box, Button, ListItemSecondaryAction, Paper, Typography, withStyles } from '@material-ui/core';
 import clsx from 'clsx';
 import { format, parseISO } from 'date-fns'
 import CloseIcon from '@material-ui/icons/Close';
-import BtnSaveDate from './BtnSaveDate'
-import TextField from '@material-ui/core/TextField';
 import { checkDate } from './DatePicker';
-import NotificationsActiveIcon from '@material-ui/icons/NotificationsActive';
+import NotificationsActiveIcon from '@material-ui/icons/NotificationsActive'
+import DateTimePicker from 'react-datetime-picker'
+import PropTypes from 'prop-types'
+
 
 const styles = theme => ({
   datePicker: {
@@ -48,30 +49,46 @@ const styles = theme => ({
 
 const Remind = (props) => {
   const { classes, handleChangeRemind, remindTime } = props
-  let remindTimeParsed = null
+  let time = null
+  let date = null
 
-  if (remindTime) remindTimeParsed = format(parseISO(remindTime), 'HH : mm')
+  if (remindTime) {
+    time = format(parseISO(remindTime), 'HH : mm')
+    date = format(parseISO(remindTime), 'E, LLL do yyyy')
+  }
+  const initialHeadText = () => {
+    if (time) return `Nhắc tôi vào ${time}`
+    else return 'Nhắc tôi'
+  }
 
   const [selectedDate, setSelectedDate] = React.useState(new Date());
   const [openDateInput, setOpenDateInput] = React.useState(false)
-  const [text, setText] = React.useState(remindTimeParsed || "Nhắc tôi")
+  const [headText, setHeadText] = React.useState(initialHeadText())
+  const [captionText, setCaptionText] = React.useState(date)
 
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-  }
   const handleopenDateInput = () => setOpenDateInput(!openDateInput)
+  let newTime, newDate
+  let canSaveDate
 
-  const isCheckDate = checkDate(selectedDate) !== 1
+  if (selectedDate) {
+    newTime = format(selectedDate, 'HH : mm')
+    newDate = format(selectedDate, 'E, LLL do yyyy')
+
+    canSaveDate =
+      checkDate(selectedDate) !== 1 &&
+      (newTime !== time || newDate !== date)
+  } else canSaveDate = false
 
   const handleSaveDate = (e) => {
-    const date = format(selectedDate, 'HH : mm')
-    setText(`Nhắc tôi vào ${date}`)
+    setHeadText(`Nhắc tôi vào ${newTime}`)
+    setCaptionText(newDate)
     setOpenDateInput(false)
     handleChangeRemind(selectedDate)
   }
 
   const handleIconCloseClick = () => {
-    setText("Nhắc tôi")
+    setHeadText("Nhắc tôi")
+    setCaptionText('')
     handleChangeRemind(null)
   }
 
@@ -84,13 +101,20 @@ const Remind = (props) => {
         onClick={handleopenDateInput}
       >
         <ListItemIcon>
-          <NotificationsActiveIcon color={remindTime ? 'secondary' : 'disabled'} />
+          <NotificationsActiveIcon color={captionText ? 'secondary' : 'disabled'} />
         </ListItemIcon>
-        <ListItemText
-          primary={text}
-        />
+        <ListItemText>
+          <Box>
+            <div>
+              {headText}
+            </div>
+            <Typography variant="caption">
+              {captionText}
+            </Typography>
+          </Box>
+        </ListItemText>
         <ListItemSecondaryAction style={{ cursor: 'pointer' }}>
-          {remindTime && <CloseIcon fontSize="small" onClick={handleIconCloseClick} />}
+          {(remindTime || captionText) && <CloseIcon fontSize="small" onClick={handleIconCloseClick} />}
         </ListItemSecondaryAction>
       </ListItem>
       <Paper elevation={2}
@@ -99,25 +123,27 @@ const Remind = (props) => {
           { [classes.hide]: !openDateInput }
         )}
       >
-        <form className={classes.container} noValidate>
-          <TextField
-            id="datetime-local"
-            type="datetime-local"
-            value={selectedDate}
-            onChange={handleDateChange}
-            className={classes.textField}
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
-        </form>
-        <BtnSaveDate
-          isCheckDate={isCheckDate}
-          handleSaveDate={handleSaveDate}
+        <DateTimePicker
+          onChange={setSelectedDate}
+          value={selectedDate}
         />
+        <Button
+          disabled={!canSaveDate}
+          variant="contained"
+          color="primary"
+          onClick={handleSaveDate}
+        >
+          Save
+      </Button>
       </Paper>
     </Box>
   )
 }
 
 export default withStyles(styles)(Remind)
+
+Remind.propTypes = {
+  classes: PropTypes.object,
+  handleChangeRemind: PropTypes.func,
+  remindTime: PropTypes.string
+}
